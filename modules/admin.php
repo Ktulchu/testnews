@@ -14,17 +14,19 @@ class admin extends \yii\base\Module
      */
     public $controllerNamespace = 'app\modules\controllers';
 	
+	/**
+     * {@inheritdoc}
+     */
 	public function beforeAction($action){
 
         if (!parent::beforeAction($action)) {
             return false;
         }
 
-        if (User::isUserAdmin(Yii::$app->user->identity->username)){
+        if (Yii::$app->user->identity && User::isUserAdmin(Yii::$app->user->identity->username)){
 		   return true;
         } else {
             Yii::$app->getResponse()->redirect(Yii::$app->getHomeUrl());
-            //для перестраховки вернем false
             return false;
         }
     }

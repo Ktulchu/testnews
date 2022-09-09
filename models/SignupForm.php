@@ -12,7 +12,8 @@ class SignupForm extends Model
     public $username;
     public $email;
     public $password;
-
+	public $status;
+	public $role;
 
     /**
      * @inheritdoc
@@ -35,6 +36,30 @@ class SignupForm extends Model
             ['password', 'string', 'min' => 6],
         ];
     }
+	
+	/**
+	 * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'role'     => 'Роль',
+            'email'    => 'Е-mail',
+            'status'   => 'Статус',
+			'username' => 'Логин',
+			'password' => 'Пароль'
+        ];
+    }
+	
+	public static function getStatusName()
+	{
+		return User::getStatusName();
+	}
+	
+	public static function getRoleName()
+	{
+		return User::getRoleName();
+	}
 
     /**
      * Signs user up.

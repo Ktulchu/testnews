@@ -29,6 +29,8 @@ class User extends ActiveRecord implements IdentityInterface
 	const ROLE_ADMIN = 20;
 	const ROLE_USER = 10;
 	
+	public $passwordnew;
+	
 	/**
      * @inheritdoc
      */
@@ -58,6 +60,7 @@ class User extends ActiveRecord implements IdentityInterface
 			['role', 'in', 'range' => [self::ROLE_USER, self::ROLE_ADMIN]],
 			[['username'], 'string'],
 			['email', 'email'],
+			['passwordnew', 'string', 'min' => 6],
         ];
     }
 	
@@ -71,7 +74,9 @@ class User extends ActiveRecord implements IdentityInterface
             'role'     => 'Роль',
             'email'    => 'Е-mail',
             'status'   => 'Статус',
-			'username' => 'Логин'
+			'username' => 'Логин',
+			'created_at' => 'Добавлен',
+			'passwordnew'=> 'Новый пароль'
         ];
     }
 	
@@ -81,8 +86,19 @@ class User extends ActiveRecord implements IdentityInterface
     public static function getStatusName()
     {
         return [
-			self::STATUS_ACTIVE  => 'Удален',
-			self::STATUS_DELETED => 'Включен'
+			self::STATUS_ACTIVE  => 'Включен',
+			self::STATUS_DELETED => 'Отключен'
+		];
+    }
+	
+	/**
+     * @inheritdoc
+     */
+    public static function getRoleName()
+    {
+        return [
+			self::ROLE_USER  => 'Пользователь фронтэнд',
+			self::ROLE_ADMIN => 'Администратор'
 		];
     }
 	
@@ -258,5 +274,18 @@ class User extends ActiveRecord implements IdentityInterface
 		return (static::findOne(['username' => $username, 'role' => self::ROLE_ADMIN, 'status' => self::STATUS_ACTIVE])) ? true : false;
 	}
 	
+	/**
+     * {@inheritdoc}
+     */
+	public function beforeSave($insert)
+	{
+		if (parent::beforeSave($insert))
+		{
+	 
+			if($this->passwordnew) $this->setPassword($this->passwordnew);
+			return true;
+		}
+		return false;
+	}
 	
 }

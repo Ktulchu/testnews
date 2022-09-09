@@ -45,42 +45,7 @@ dmstr\web\AdminLteAsset::register($this);
             </a>
 
             <div class="navbar-custom-menu">
-                <ul class="nav navbar-nav">
-                        <!-- Messages: style can be found in dropdown.less-->
-                        <li class="dropdown messages-menu">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <i class="fa fa-envelope-o"></i>
-                                <span class="label label-success">1</span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li class="header">You have 1 notification(s)</li>
-                                <li>
-                                    <!-- inner menu: contains the actual data -->
-                                    <ul class="menu">
-                                        <li>
-                                            <a href="#">
-                                                <i class="ion ion-ios7-people info"></i> Welcome to Phundament 4!
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="dropdown tasks-menu">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <i class="fa fa-flag"></i>
-                                <span class="label label-default">n/a</span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li class="header">Languages</li>
-                                <li>
-                                    <!-- inner menu: contains the actual data -->
-                                    <ul class="menu">
-                                        languages
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
+                <ul class="nav navbar-nav"> 
                         <!-- User Account: style can be found in dropdown.less -->
                         <li class="dropdown user user-menu">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -106,12 +71,8 @@ dmstr\web\AdminLteAsset::register($this);
                                 </li>
                                 <!-- Menu Footer-->
                                 <li class="user-footer">
-                                    <div class="pull-left">
-                                        <a href="<?= \yii\helpers\Url::to(['/user/settings/profile']) ?>"
-                                           class="btn btn-default btn-flat">Profile</a>
-                                    </div>
                                     <div class="pull-right">
-                                        <a href="<?= \yii\helpers\Url::to(['/user/security/logout']) ?>"
+                                        <a href="<?= \yii\helpers\Url::to(['/user/logout']) ?>"
                                            class="btn btn-default btn-flat" data-method="post">Sign out</a>
                                     </div>
                                 </li>
