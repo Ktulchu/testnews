@@ -1,6 +1,7 @@
 <?php
 use dmstr\widgets\Alert;
 use yii\helpers\Html;
+use yii\widgets\Breadcrumbs;
 
 /* @var $this \yii\web\View */
 /* @var $content string */
@@ -94,14 +95,13 @@ dmstr\web\AdminLteAsset::register($this);
     <!-- Right side column. Contains the navbar and content of the page -->
     <div class="content-wrapper">
         <!-- Content Header (Page header) -->
-        <section class="content-header">
+		<section class="content-header">
             <h1>
                 <small><?= $this->title ?></small>
             </h1>
-            <ol class="breadcrumb">
-                <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-                <li class="active">Dashboard</li>
-            </ol>
+            <?= Breadcrumbs::widget([
+              'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
+			]) ?>
         </section>
 
         <!-- Main content -->
