@@ -30,6 +30,12 @@ $menuItems = [];
 
 $favouriteMenuItems[] = ['label' => 'MAIN NAVIGATION', 'options' => ['class' => 'header']];
 
+$parsers[] = [
+    'url' => ['/admin/parse/typepreg'],
+    'icon' => 'cog',
+    'label' => 'HTML парсер',
+];
+
 
 $menuItems[] = [
     'url' => ['/admin/category'],
@@ -42,6 +48,13 @@ $menuItems[] = [
     'icon' => 'cog',
     'label' => 'Статьи',
 ];
+$menuItems[] = [
+    'url' => 'javascript:void(0);',
+    'icon' => 'cog',
+    'label' => 'Инструменты',
+	'items' => $parsers,
+];
+
 
 $menuItems[] = [
     'url' => ['/admin/users'],

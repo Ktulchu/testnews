@@ -26,7 +26,7 @@ class admin extends \yii\base\Module
         if (Yii::$app->user->identity && User::isUserAdmin(Yii::$app->user->identity->username)){
 		   return true;
         } else {
-            Yii::$app->getResponse()->redirect(Yii::$app->getHomeUrl());
+            Yii::$app->getResponse()->redirect(['/user/login']);
             return false;
         }
     }

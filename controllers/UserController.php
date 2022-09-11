@@ -9,6 +9,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\SignupForm;
+use app\models\User;
 
 class UserController extends Controller
 {
@@ -52,7 +53,8 @@ class UserController extends Controller
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+			if(Yii::$app->user->identity->role == User::ROLE_ADMIN) return $this->redirect(['/admin']);
+				else return $this->goBack();
         }
 
         $model->password = '';

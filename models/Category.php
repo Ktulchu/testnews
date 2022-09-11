@@ -15,6 +15,7 @@ use yii\helpers\ArrayHelper;
  * @property int $status
  * @property int $created_at
  * @property int $updated_at
+ * @property int $parent_id
  */
 class Category extends \yii\db\ActiveRecord
 {
