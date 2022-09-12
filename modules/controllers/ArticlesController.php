@@ -8,7 +8,7 @@ use app\modules\models\ArticleForm;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-
+use yii\web\UploadedFile;
 /**
  * ArticleController implements the CRUD actions for Article model.
  */
@@ -71,8 +71,9 @@ class ArticlesController extends Controller
         $model = new ArticleForm();
 
         if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
+            if ($model->load($this->request->post())) {
+				$model->image = UploadedFile::getInstances($model, 'image');
+                if($model->save()) return $this->redirect(['view', 'id' => $model->id]);
             }
         } 
 
@@ -93,9 +94,11 @@ class ArticlesController extends Controller
         $article = $this->findModel($id);
 		$model = new ArticleForm();
 		$model->attributes = $article->attributes;
+		$model->id = $id;
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($this->request->isPost && $model->load($this->request->post())) {
+			$model->image = UploadedFile::getInstances($model, 'image');
+            if($model->save()) return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('update', [

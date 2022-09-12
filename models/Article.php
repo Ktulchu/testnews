@@ -56,6 +56,26 @@ class Article extends \yii\db\ActiveRecord
             [['seourl'], 'string', 'max' => 500],
         ];
     }
+	
+	/**
+     * {@inheritdoc}
+     */
+	public function ValidUnique($attribute, $params)
+	{
+		$alias = Alias::findOne(['seourl' => $this->seourl]);
+		if (Yii::$app->controller->action->id == 'create')
+		{
+			if($alias) $this->addError($attribute, 'Этот псевдоним уже занят');
+		}
+		else
+		{
+			 $news = self::findOne(['id' => $this->id]);
+			 if($alias && $news->seourl != $this->seourl)
+			 {
+				 $this->addError($attribute, 'Этот псевдоним уже занят');
+			 }
+		}
+	}
 
     /**
      * {@inheritdoc}
@@ -94,5 +114,14 @@ class Article extends \yii\db\ActiveRecord
 	public function getCategory()
 	{
 		return $this->hasOne(Category::className(), ['id' => 'category_id']);
+	}
+	
+	/**
+     * Gets query for [[Category]].
+     * @return \yii\db\ActiveQuery
+     */ 
+	public function getAlias()
+	{
+		return $this->hasOne(Alias::className(), ['seourl' => 'seourl']);
 	}
 }
