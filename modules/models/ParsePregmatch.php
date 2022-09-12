@@ -6,6 +6,7 @@ use Yii;
 use yii\base\Model;
 use Symfony\Component\DomCrawler\Crawler;
 use app\models\Category;
+use app\models\Article;
 /**
  * ParsePregmatch is the model.
  */
@@ -205,25 +206,88 @@ class ParsePregmatch extends Model
 
 			// we get the content page
 			$content = $this->getContent($url);	
-			
-			$category = Category::findOne(['name' => $content['category']]);
-			if($category === null)
-			{
-				$category = new Category([
-					'name'   => $content['category'],
-					'seourl' => $this->Translate($content['category']),
-					'status' => 1,
-					'parent_id' => 0
-				]);
-			}
-			
+			$transaction = Yii::$app->db->beginTransaction();
+			try {
+				$category = Category::findOne(['name' => $content['category']]);
+				if($category === null)
+				{
+					$category = new Category([
+						'name'   => $content['category'],
+						'seourl' => $this->Translate($content['category']),
+						'status' => 10,
+						'parent_id' => 0
+					]);
+					if(!$category->validate())
+					{
+						foreach ($category->getErrors() as $key => $value) {
+							\Yii::$app->session->setFlash('danger', 'Ошибка категории! '. $value[0]);
+							break;
+						}
+						return false; 
+					}
+					$category->save();
+					$alias = new Alias([
+						'seourl' => $this->Translate($content['title']),
+						'url'    => '/'. $this->Translate($content['title']),
+						'safe'   => 'news/category?id='. $article->id
+					]);
+					$alias->save();
+				}
+				$article = Article::findOne(['ext_id' => $id]);
+				if($article === null)
+				{
+					$article = new Article([
+						'position'    => $category->id,
+						'title'       => $content['title'],
+						'image'       => $content['image'],
+						'announcement'=> $this->setAnons($content['article']),
+						'ext_id'      => $id,
+						'content'     => $content['article'],
+						'seourl'      => $this->Translate($content['title']),
+					]);
+					if(!$article->validate())
+					{
+						foreach ($article->getErrors() as $key => $value) {
+							\Yii::$app->session->setFlash('danger', 'Ошибка статьи! '. $value[0]);
+							break;
+						}
+						return false; 
+					}
+					$article->save();
+					$alias = new Alias([
+						'seourl' => $this->Translate($content['title']),
+						'url'    => '/news/'. $this->Translate($content['title']),
+						'safe'   => 'news/view?id='. $article->id
+					]);
+					$alias->save();
+				}
+				
+				
+				
+				$transaction->commit();
+				
+			} catch (\Exception $e) {
+				\Yii::$app->session->setFlash('danger','Oшибка записи!');
+				$transaction->rollBack();
+				throw $e;
+			} catch (\Throwable $e) {
+				\Yii::$app->session->setFlash('danger','Oшибка записи!');
+				$transaction->rollBack();
+				throw $e;
+			}		
 			
 			echo $content['article'];
 			die;
 		}
 	}
 	
-	
+	private function setAnons($string, $limit = 200)
+	{
+		$string = trim(str_replace('  ', '', strip_tags($string)));
+		$anons = substr($string, 0, 200); 
+		return $anons .' ...';
+	}
+
 	private function getContent(string $url)
     {
         $agent= 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
@@ -275,17 +339,17 @@ class ParsePregmatch extends Model
 					$node->parentNode->removeChild($node);
 				}
 			});
+			$crawler->filter('html .article__main-image')->each(function (Crawler $crawler) {
+				foreach ($crawler as $node) {
+					$node->parentNode->removeChild($node);
+				}
+			});
 			$remove = $crawler->filter('html .fox-tail')->nextAll();
-			
-			
 		}
 		$prop = ($this->articletipe == 'other') ? "@". trim($this->article) : "contains(". $this->articletipe .", '". trim($this->article) ."')";
         $articleBlock = $crawler->filterXPath("//". $this->articleteg ."[". $prop ."]")->first(); 
         if ($articleBlock->count()) {
-			
-			
-			$conten['article'] = trim($articleBlock->html());
-			
+			$conten['article'] = trim($articleBlock->html());	
         }
 		return $conten;
     }
@@ -332,10 +396,8 @@ class ParsePregmatch extends Model
 		);
 		
 		if($language == 'ru') {
-			\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 			return mb_strtolower(strtr(trim($data), $translit), 'utf-8');
 		} else {
-			\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 			return mb_strtolower(strtr(trim($data), array_flip($translit)), 'utf-8');
 		}
 	}

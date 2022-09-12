@@ -24,6 +24,17 @@ class m220909_074006_init extends Migration
             'created_at' => $this->integer(11)->notNull(),
             'updated_at' => $this->integer(11)->notNull(),
         ]);
+		
+		$this->insert('{{%user}}',[
+			'username'=>'admin',
+			'auth_key'=>'2nUW-Jf-uxOC7OcOnxAyM7zqE6x5hzo8',
+			'password_hash'=>'$2y$13$P9QioTsezdVZN1HCY3aaCefe/yAGWGpI7rwX4ezAWmfrwBpDh599O',
+			'email' => 'admin@admin.ru',
+			'role' => 20,
+			'status' => 10,
+			'created_at' => time(),
+			'updated_at' => time(),
+		]);
     }
 
     /**
@@ -31,9 +42,7 @@ class m220909_074006_init extends Migration
      */
     public function safeDown()
     {
-        echo "m220909_074006_init cannot be reverted.\n";
-
-        return false;
+        $this->dropTable('user');
     }
 
     /*

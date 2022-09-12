@@ -14,10 +14,13 @@ class m220909_130524_create_table_article extends Migration
     {
 		$this->createTable('{{%article}}', [
             'id' => $this->primaryKey(),
-            'category_id' => $this->string(32)->notNull(),
-            'title' => $this->string(32)->notNull(),
-            'announcement' => $this->string(100)->notNull(),
-            'article' => $this->string(100)->notNull(),
+            'category_id' => $this->integer(11),
+			'seourl' => $this->string(500)->notNull()->unique(),
+            'title' => $this->string(500)->notNull(),
+            'announcement' => $this->string(205)->notNull(),
+            'content' => $this->string(100)->notNull(),
+			'image' => $this->string(255),
+			'ext_id' =>  $this->string(32),
             'created_at' => $this->integer(11)->notNull(),
             'updated_at' => $this->integer(11)->notNull(),
         ]);
@@ -28,9 +31,7 @@ class m220909_130524_create_table_article extends Migration
      */
     public function safeDown()
     {
-        echo "m220909_130524_create_table_article cannot be reverted.\n";
-
-        return false;
+        $this->dropTable('article');
     }
 
     /*

@@ -14,6 +14,7 @@ class m220909_123232_create_table_category extends Migration
     {
 		$this->createTable('{{%category}}', [
             'id' => $this->primaryKey(),
+			'parent_id' => $this->integer(11),
             'name' => $this->string(100)->notNull(),
             'seourl' => $this->string(100)->notNull(),
             'status' => $this->smallInteger()->notNull()->defaultValue(10),
@@ -27,9 +28,7 @@ class m220909_123232_create_table_category extends Migration
      */
     public function safeDown()
     {
-        echo "m220909_123232_create_table_category cannot be reverted.\n";
-
-        return false;
+        $this->dropTable('category');
     }
 
     /*

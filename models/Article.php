@@ -3,17 +3,22 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "article".
  *
  * @property int $id
- * @property string $category_id
+ * @property string $position
  * @property string $title
  * @property string $announcement
- * @property string $article
  * @property int $created_at
  * @property int $updated_at
+ * @property string $content
+ * @property string|null $image
+ * @property string|null $public_date
+ * @property string|null $ext_id
+ * @property string $seourl
  */
 class Article extends \yii\db\ActiveRecord
 {
@@ -24,6 +29,16 @@ class Article extends \yii\db\ActiveRecord
     {
         return 'article';
     }
+	
+	/**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::className(),
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -31,11 +46,14 @@ class Article extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['category_id', 'title', 'announcement', 'article', 'created_at', 'updated_at'], 'required'],
+            [['position', 'title', 'announcement', 'content', 'seourl'], 'required'],
             [['created_at', 'updated_at'], 'default', 'value' => null],
-            [['created_at', 'updated_at'], 'integer'],
-            [['category_id', 'title'], 'string', 'max' => 32],
-            [['announcement', 'article'], 'string', 'max' => 100],
+            [['created_at', 'updated_at', 'position'], 'integer'],
+            [['content'], 'string'],
+            [['title'], 'string', 'max' => 32],
+            [['announcement'], 'string', 'max' => 100],
+            [['image', 'public_date', 'ext_id'], 'string', 'max' => 255],
+            [['seourl'], 'string', 'max' => 500],
         ];
     }
 
@@ -49,9 +67,13 @@ class Article extends \yii\db\ActiveRecord
             'category_id' => 'Category ID',
             'title' => 'Title',
             'announcement' => 'Announcement',
-            'article' => 'Article',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
+            'content' => 'Content',
+            'image' => 'Image',
+            'public_date' => 'Public Date',
+            'ext_id' => 'Ext ID',
+            'seourl' => 'Seourl',
         ];
     }
 }
