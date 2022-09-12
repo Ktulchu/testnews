@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'e4391ed1d8f6f9e7b475e05dbeaa547459987f26',
+        'reference' => '4c9ee7df55a09ce0973b5c7cec92cdb01b20dce7',
         'name' => 'yiisoft/yii2-app-basic',
         'dev' => true,
     ),
@@ -272,6 +272,17 @@
             'install_path' => __DIR__ . '/../kartik-v/bootstrap-fileinput',
             'aliases' => array(),
             'reference' => '213e0887d254a9c6fb028ff817abd8af7e734e78',
+            'dev_requirement' => false,
+        ),
+        'kartik-v/yii2-editors' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'type' => 'yii2-extension',
+            'install_path' => __DIR__ . '/../kartik-v/yii2-editors',
+            'aliases' => array(
+                0 => '1.0.x-dev',
+            ),
+            'reference' => '529cff31afda936ac5c98d7f9c53bb01c4452419',
             'dev_requirement' => false,
         ),
         'kartik-v/yii2-krajee-base' => array(
@@ -791,7 +802,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'e4391ed1d8f6f9e7b475e05dbeaa547459987f26',
+            'reference' => '4c9ee7df55a09ce0973b5c7cec92cdb01b20dce7',
             'dev_requirement' => false,
         ),
         'yiisoft/yii2-bootstrap' => array(

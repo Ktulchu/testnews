@@ -48,6 +48,7 @@ class ComposerStaticInitd5a6d79562bcc4cd0c0aa151cf24d71b
             'kartik\\select2\\' => 15,
             'kartik\\plugins\\fileinput\\' => 25,
             'kartik\\file\\' => 12,
+            'kartik\\editors\\' => 15,
             'kartik\\base\\' => 12,
         ),
         'd' => 
@@ -166,6 +167,10 @@ class ComposerStaticInitd5a6d79562bcc4cd0c0aa151cf24d71b
         'kartik\\file\\' => 
         array (
             0 => __DIR__ . '/..' . '/kartik-v/yii2-widget-fileinput/src',
+        ),
+        'kartik\\editors\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/kartik-v/yii2-editors/src',
         ),
         'kartik\\base\\' => 
         array (

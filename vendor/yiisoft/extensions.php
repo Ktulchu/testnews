@@ -111,4 +111,13 @@ return array (
       '@kartik/select2' => $vendorDir . '/kartik-v/yii2-widget-select2/src',
     ),
   ),
+  'kartik-v/yii2-editors' => 
+  array (
+    'name' => 'kartik-v/yii2-editors',
+    'version' => 'dev-master',
+    'alias' => 
+    array (
+      '@kartik/editors' => $vendorDir . '/kartik-v/yii2-editors/src',
+    ),
+  ),
 );

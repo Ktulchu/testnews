@@ -4,6 +4,7 @@ namespace app\modules\controllers;
 
 use app\models\Article;
 use app\modules\models\SearchArticle;
+use app\modules\models\ArticleForm;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -67,15 +68,13 @@ class ArticlesController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Article();
+        $model = new ArticleForm();
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
                 return $this->redirect(['view', 'id' => $model->id]);
             }
-        } else {
-            $model->loadDefaultValues();
-        }
+        } 
 
         return $this->render('create', [
             'model' => $model,
@@ -91,7 +90,9 @@ class ArticlesController extends Controller
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
+        $article = $this->findModel($id);
+		$model = new ArticleForm();
+		$model->attributes = $article->attributes;
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);

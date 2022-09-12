@@ -10,7 +10,7 @@ use yii\helpers\ArrayHelper;
  * This is the model class for table "article".
  *
  * @property int $id
- * @property string $position
+ * @property string $category_id
  * @property string $title
  * @property string $announcement
  * @property int $created_at
