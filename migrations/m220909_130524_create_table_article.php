@@ -18,7 +18,7 @@ class m220909_130524_create_table_article extends Migration
 			'seourl' => $this->string(500)->notNull()->unique(),
             'title' => $this->string(500)->notNull(),
             'announcement' => $this->string(205)->notNull(),
-            'content' => $this->string(100)->notNull(),
+            'content' => $this->text()->notNull(),
 			'image' => $this->string(255),
 			'ext_id' =>  $this->string(32),
             'created_at' => $this->integer(11)->notNull(),

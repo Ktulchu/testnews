@@ -17,8 +17,8 @@ class SearchArticle extends Article
     public function rules()
     {
         return [
-            [['id', 'created_at', 'updated_at'], 'integer'],
-            [['category_id', 'title', 'announcement', 'article'], 'safe'],
+            [['id', 'category_id', 'created_at', 'updated_at'], 'integer'],
+            [['seourl', 'title', 'announcement', 'content', 'image', 'ext_id'], 'safe'],
         ];
     }
 
@@ -59,14 +59,17 @@ class SearchArticle extends Article
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
+            'category_id' => $this->category_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 
-        $query->andFilterWhere(['ilike', 'category_id', $this->category_id])
+        $query->andFilterWhere(['ilike', 'seourl', $this->seourl])
             ->andFilterWhere(['ilike', 'title', $this->title])
             ->andFilterWhere(['ilike', 'announcement', $this->announcement])
-            ->andFilterWhere(['ilike', 'article', $this->article]);
+            ->andFilterWhere(['ilike', 'content', $this->content])
+            ->andFilterWhere(['ilike', 'image', $this->image])
+            ->andFilterWhere(['ilike', 'ext_id', $this->ext_id]);
 
         return $dataProvider;
     }

@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "article".
@@ -16,7 +17,6 @@ use yii\behaviors\TimestampBehavior;
  * @property int $updated_at
  * @property string $content
  * @property string|null $image
- * @property string|null $public_date
  * @property string|null $ext_id
  * @property string $seourl
  */
@@ -46,13 +46,13 @@ class Article extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['position', 'title', 'announcement', 'content', 'seourl'], 'required'],
+            [['category_id', 'title', 'announcement', 'content', 'seourl'], 'required'],
             [['created_at', 'updated_at'], 'default', 'value' => null],
-            [['created_at', 'updated_at', 'position'], 'integer'],
+            [['created_at', 'updated_at', 'category_id'], 'integer'],
             [['content'], 'string'],
-            [['title'], 'string', 'max' => 32],
-            [['announcement'], 'string', 'max' => 100],
-            [['image', 'public_date', 'ext_id'], 'string', 'max' => 255],
+            [['title'], 'string', 'max' => 500],
+            [['announcement'], 'string', 'max' => 205],
+            [['image', 'ext_id'], 'string', 'max' => 255],
             [['seourl'], 'string', 'max' => 500],
         ];
     }
@@ -64,16 +64,35 @@ class Article extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'category_id' => 'Category ID',
-            'title' => 'Title',
-            'announcement' => 'Announcement',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
-            'content' => 'Content',
-            'image' => 'Image',
+            'category_id' => 'Категория',
+            'title' => 'Заголовок',
+            'announcement' => 'Анонс',
+            'created_at' => 'Дата добавления',
+            'updated_at' => 'Дата',
+            'content' => 'Полный текс',
+            'image' => 'Изображение',
             'public_date' => 'Public Date',
-            'ext_id' => 'Ext ID',
-            'seourl' => 'Seourl',
+            'ext_id' => 'Внешний ключ',
+            'seourl' => 'Псевданим',
         ];
     }
+	
+	/**
+     * Gets query for [[Category]].
+	 * @return array
+     */ 
+	public static function getCategoryList()
+	{
+		$categories = Category::find()->select(['id', 'name'])->all();
+		return ArrayHelper::map($categories, 'id', 'name');
+	}
+	
+	/**
+     * Gets query for [[Category]].
+     * @return \yii\db\ActiveQuery
+     */ 
+	public function getCategory()
+	{
+		return $this->hasOne(Category::className(), ['id' => 'category_id']);
+	}
 }

@@ -7,6 +7,7 @@ use yii\base\Model;
 use Symfony\Component\DomCrawler\Crawler;
 use app\models\Category;
 use app\models\Article;
+use app\models\Alias;
 /**
  * ParsePregmatch is the model.
  */
@@ -175,19 +176,9 @@ class ParsePregmatch extends Model
 	
 	public function Parse()
 	{
-		
-		//$url = 'https://kostromatranstur.ru/';
-		
-		$agent= 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_VERBOSE, true);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_USERAGENT, $agent);
-		curl_setopt($ch, CURLOPT_URL,$this->url);
-		$contents = curl_exec($ch);
-		
-		$crawler = new Crawler($contents);
+		$content = $this->getSringHtml($this->url);
+		if(!$content) return false;
+		$crawler = new Crawler($content);
 
 		//Graub Main News
 		if($this->grabmain == 1)
@@ -205,7 +196,7 @@ class ParsePregmatch extends Model
 				else $url = $urlNode->attr("href");
 
 			// we get the content page
-			$content = $this->getContent($url);	
+			$content = $this->getContent($url, $this->grabmain);	
 			$transaction = Yii::$app->db->beginTransaction();
 			try {
 				$category = Category::findOne(['name' => $content['category']]);
@@ -229,7 +220,7 @@ class ParsePregmatch extends Model
 					$alias = new Alias([
 						'seourl' => $this->Translate($content['title']),
 						'url'    => '/'. $this->Translate($content['title']),
-						'safe'   => 'news/category?id='. $article->id
+						'safe'   => 'news/category?id='. $category->id
 					]);
 					$alias->save();
 				}
@@ -237,10 +228,10 @@ class ParsePregmatch extends Model
 				if($article === null)
 				{
 					$article = new Article([
-						'position'    => $category->id,
+						'category_id' => $category->id,
 						'title'       => $content['title'],
 						'image'       => $content['image'],
-						'announcement'=> $this->setAnons($content['article']),
+						'announcement'=> $this->setAnons($content['article']),	
 						'ext_id'      => $id,
 						'content'     => $content['article'],
 						'seourl'      => $this->Translate($content['title']),
@@ -261,9 +252,7 @@ class ParsePregmatch extends Model
 					]);
 					$alias->save();
 				}
-				
-				
-				
+
 				$transaction->commit();
 				
 			} catch (\Exception $e) {
@@ -276,38 +265,144 @@ class ParsePregmatch extends Model
 				throw $e;
 			}		
 			
-			echo $content['article'];
-			die;
 		}
+		
+		$crawler->filterXPath("//div[contains(@class, 'js-news-feed-list')]/a[contains(@class, 'news-feed__item')]") 
+            ->each(function (Crawler $node) {
+                // we get the url
+				$url = $node->attr("href");
+                if (!$url) { 
+                    return;
+                }
+
+                $titleNode = $node->filterXPath("//span[contains(@class, 'news-feed__item__title')]")->first();
+                $title = trim($titleNode->text());
+
+                $id = str_replace("id_newsfeed_", "", $node->attr("id")); 
+                if (!$id) {
+                    return;
+                } 
+				echo $url.'<br/>';
+				
+				$content = $this->getContent($url, 0);
+
+				if($content)
+				{
+					$transaction = Yii::$app->db->beginTransaction();
+					try {
+						$category = Category::findOne(['name' => $content['category']]);
+						if($category === null)
+						{
+							$category = new Category([
+								'name'   => $content['category'],
+								'seourl' => $this->Translate($content['category']),
+								'status' => 10,
+								'parent_id' => 0
+							]);
+							if(!$category->validate())
+							{
+								foreach ($category->getErrors() as $key => $value) {
+									\Yii::$app->session->setFlash('danger', 'Ошибка категории! '. $value[0]);
+									break;
+								}
+								return false; 
+							}
+							$category->save();
+							$alias = new Alias([
+								'seourl' => $this->Translate($content['title']),
+								'url'    => '/'. $this->Translate($content['title']),
+								'safe'   => 'news/category?id='. $category->id
+							]);
+							$alias->save();
+						}
+						$article = Article::findOne(['ext_id' => $id]);
+
+						if($article === null)
+						{
+							$article = new Article([
+								'category_id' => $category->id,
+								'title'       => $content['title'],
+								'image'       => $content['image'],
+								'announcement'=> $this->setAnons($content['article']),	
+								'ext_id'      => $id,
+								'content'     => $content['article'],
+								'seourl'      => $this->Translate($title),
+							]);
+							if(!$article->validate())
+							{
+								foreach ($article->getErrors() as $key => $value) {
+									\Yii::$app->session->setFlash('danger', 'Ошибка статьи! '. $value[0]);
+									break;
+								}
+								return false; 
+							}
+							$article->save();
+							$alias = new Alias([
+								'seourl' => $this->Translate($content['title']),
+								'url'    => '/news/'. $this->Translate($content['title']),
+								'safe'   => 'news/view?id='. $article->id
+							]);
+							$alias->save();
+						}
+
+						$transaction->commit();
+						
+						return true;
+						
+					} catch (\Exception $e) {
+						\Yii::$app->session->setFlash('danger','Oшибка записи!');
+						$transaction->rollBack();
+						throw $e;
+					} catch (\Throwable $e) {
+						\Yii::$app->session->setFlash('danger','Oшибка записи!');
+						$transaction->rollBack();
+						throw $e;
+					}
+				}
+
+            });
 	}
 	
-	private function setAnons($string, $limit = 200)
+	private function getSringHtml($url)
 	{
-		$string = trim(str_replace('  ', '', strip_tags($string)));
-		$anons = substr($string, 0, 200); 
-		return $anons .' ...';
-	}
-
-	private function getContent(string $url)
-    {
-        $agent= 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
+		$arr = explode('=', $url);
+		if(count($arr) > 2) return false;
+		
+		$agent= 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_VERBOSE, true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_USERAGENT, $agent);
 		curl_setopt($ch, CURLOPT_URL, $url);
-		$contents = curl_exec($ch);
-        $crawler = new Crawler($contents);
+		return curl_exec($ch);
+		
+	}
+	
+	private function setAnons($string, $limit = 200)
+	{
+		mb_internal_encoding('UTF-8');
+		$string = trim(str_replace('  ', '', strip_tags($string)));
+		$anons = mb_substr($string, 0, $limit); 
+		return $anons;
+	}
+
+	private function getContent(string $url, $type)
+    {
+        $content = $this->getSringHtml($url);
+		if(!$content) return false;
+        $crawler = new Crawler($content);
 				
 		
 		// we get the title
 		$prop = ($this->titletipe == 'other') ? "@". trim($this->title) : "contains(". $this->titletipe .", '". trim($this->title) ."')";
-		$title = $crawler->filterXPath("//". $this->titleteg ."[contains(@class, 'article__header__title-in')]")->first(); 
-		if ($title)
+		$title = $crawler->filterXPath("//". $this->titleteg ."[". $prop ."]")->first(); 
+		echo $prop ;
+		if (!empty($title))
 		{
 			$conten['title'] = trim($title->html());
-        }
+		}
+
 		
 		// we get the image
 		$prop = ($this->imagetipe == 'other') ? "@". trim($this->image) : "contains(". $this->imagetipe .", '". trim($this->image) ."')";	
@@ -344,12 +439,22 @@ class ParsePregmatch extends Model
 					$node->parentNode->removeChild($node);
 				}
 			});
+			$crawler->filter('html .article__ticker__link')->each(function (Crawler $crawler) {
+				foreach ($crawler as $node) {
+					$node->parentNode->removeChild($node);
+				}
+			});
+			$crawler->filter('html .article__ticker__link')->each(function (Crawler $crawler) {
+				foreach ($crawler as $node) {
+					$node->parentNode->removeChild($node);
+				}
+			});
 			$remove = $crawler->filter('html .fox-tail')->nextAll();
 		}
 		$prop = ($this->articletipe == 'other') ? "@". trim($this->article) : "contains(". $this->articletipe .", '". trim($this->article) ."')";
         $articleBlock = $crawler->filterXPath("//". $this->articleteg ."[". $prop ."]")->first(); 
         if ($articleBlock->count()) {
-			$conten['article'] = trim($articleBlock->html());	
+			$conten['article'] = mb_convert_encoding(trim($articleBlock->html()), 'UTF-8', mb_detect_encoding($articleBlock->html()));	
         }
 		return $conten;
     }
