@@ -5,7 +5,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
-
+use app\components\Image;
 /** @var yii\web\View $this */
 /** @var app\modules\models\SearchArticle $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
@@ -35,7 +35,12 @@ $this->params['breadcrumbs'][] = $this->title;
 				'headerOptions' => ['width' => '60'],
 				'contentOptions' =>['class' => 'table_class','style'=>'display:block; text-align:center'],
 				'content'=>function($data){
-					return '<img class="img-thumbnail" src="'. $data->image .'" width="100%" alt="">';
+					if(substr($data->image, 0, 4) == "http") {
+					   $source = $data->image;
+					} else {
+					   $source = Image::resize($data->image,95,63);
+					}
+					return '<img class="img-thumbnail" src="'. $source .'" width="100%" alt="">';
 				},
 				'filter' =>''
 			],
@@ -48,15 +53,21 @@ $this->params['breadcrumbs'][] = $this->title;
 			],
             'title',
             'announcement',
-            //'article',
-            //'created_at',
-            'updated_at',
-            [
-                'class' => ActionColumn::className(),
-                'urlCreator' => function ($action, Article $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
-                 }
-            ],
+            'updated_at:datetime',
+			[
+				'class' => 'yii\grid\ActionColumn',
+				'header'=>'Действия',
+				'headerOptions' => ['width' => '130'],
+				'template' => '{update} {delete}',
+				'buttons' => [
+					'update' => function ($url,$model) {
+						return Html::a('<span class="fa fa-pencil"></span>', $url, ['class' => 'btn btn-primary btn-sm']);
+					},
+					'delete' => function ($url,$model,$key) {
+						return Html::a('<span class="fa fa-trash"></span>', ['delete', 'id' => $model->id], ['class' => 'btn btn-danger btn-sm', 'data-method' => 'post', 'data-confirm' => 'Действие не обратимо. Вы уверены?']);
+					},
+				],
+			],   
         ],
     ]); ?>
 	</div>

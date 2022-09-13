@@ -115,6 +115,20 @@ class Category extends \yii\db\ActiveRecord
 	}
 	
 	/**
+     * Gets query for [[Category]].
+	 * @return array
+     */ 
+	public function getList()
+	{
+		$parents = self::find()
+			->select(['id', 'name'])
+			->all();
+		$result = ArrayHelper::map($parents, 'id', 'name');
+		unset($result[$this->id]);
+		return $result;
+	}
+	
+	/**
      * {@inheritdoc}
      */
 	public function beforeSave($insert)

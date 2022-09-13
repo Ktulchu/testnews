@@ -18,7 +18,7 @@ use kartik\select2\Select2;
 			</div>
 			<div class="col-md-6">
 				<?= $form->field($model, 'parent_id')->widget(Select2::classname(), [
-					'data' => $model->parentsList,
+					'data' => $model->getList(),
 					'options' => ['placeholder' => 'Родительская категория'],
 					'pluginOptions' => [
 						'allowClear' => true

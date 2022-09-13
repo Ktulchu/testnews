@@ -5,6 +5,7 @@ use yii\bootstrap4\ActiveForm;
 use kartik\editors\Summernote;
 use kartik\select2\Select2;
 use kartik\file\FileInput;
+use app\components\Image;
 
 /** @var yii\web\View $this */
 /** @var app\models\Article $model */
@@ -30,29 +31,48 @@ use kartik\file\FileInput;
 			],			
 		]); ?> 
 		<?= $form->field($model, 'seourl')->textInput(['maxlength' => true]) ?>
+		<?
+			if(substr($model->image, 0, 4) == "http") {
+			   $source = $model->image;
+			} else {
+			   $source = Image::resize($model->image, 213, 160);
+			}
+		?>
 		<?= $form->field($model, 'image')->widget(FileInput::classname(), [
 			'options' => ['accept' => 'image/*'],
 			'pluginOptions' => [
 				'showUpload' => false,
-			]
+				'showDrag' => false,
+				'initialPreview' => Html::img($source, ['alt' => $model->image, 'width' => 213]),
+				'layoutTemplates' => [
+                    'footer' => '',
+                ],
+				
+			],
 		]); ?>
+		<div class="hidden d-none">
+		  <?= $form->field($model, 'delimg')->textInput() ?>
+		</div>
 	  </div>
 	</div>
   <?php ActiveForm::end(); ?>
 </div>
 <?php
 $src = <<< JS
-  $('#article-title').on('change', function() {
+  $('#articleform-title').on('change', function() {
     if (confirm("Изменить поле SEOURL?")) {
 	  $.ajax({
 	    url: '/admin/category/translate',
 	    data: {data : $(this).val()},
 	    dataType: 'json',
 	    success: function(json) {		
-		  $('#article-seourl').val(json);
+		  $('#articleform-seourl').val(json);
 	    }
 	  });
     }
+  });
+  $(document).on('click', '.fileinput-remove', function(){
+	  $('#articleform-delimg').val('Y'); 
   });
 JS;
 $this->registerJs($src, yii\web\View::POS_READY);

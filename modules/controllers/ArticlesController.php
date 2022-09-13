@@ -73,7 +73,9 @@ class ArticlesController extends Controller
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
 				$model->image = UploadedFile::getInstances($model, 'image');
-                if($model->save()) return $this->redirect(['view', 'id' => $model->id]);
+                if($model->save()){
+					return $this->redirect(['index', 'sort' => 'id']);
+				}
             }
         } 
 
@@ -98,7 +100,9 @@ class ArticlesController extends Controller
 
         if ($this->request->isPost && $model->load($this->request->post())) {
 			$model->image = UploadedFile::getInstances($model, 'image');
-            if($model->save()) return $this->redirect(['view', 'id' => $model->id]);
+            if($model->save()){
+				return $this->redirect(['index', 'sort' => 'id']);
+			}
         }
 
         return $this->render('update', [

@@ -20,13 +20,14 @@ class ArticleForm extends Model
 	public $content;
 	public $image;
 	public $seourl;
+	public $delimg;
    
 	/**
      * {@inheritdoc}
      */
 	public function init()
 	{
-		$dir = Yii::getAlias('@app') .'/web/userdata/images';
+		$dir = Yii::getAlias('@app') .'/web/images';
 		if(!is_dir($dir)) { mkdir($dir, 0777, true);}
 
 		parent::init();
@@ -39,7 +40,7 @@ class ArticleForm extends Model
     {
         return [
             [['category_id', 'title', 'announcement', 'content', 'seourl'], 'required'],
-            [['content'], 'string'],
+            [['content', 'delimg'], 'string'],
             [['title'], 'string', 'max' => 500],
             [['announcement'], 'string', 'max' => 205],
             [['seourl'], 'string', 'max' => 500],
@@ -118,21 +119,26 @@ class ArticleForm extends Model
 		}
 		
 		$transaction = Yii::$app->db->beginTransaction();
-		try {
-
-			if($this->image) {
+		try {		
+			if(count($this->image) > 0) {
 				$image = $this->SaveFile();
-			}
+				
+			} 
+			if(count($this->image) == 0 && $this->delimg) {
+				$image = 'nofoto.jpg';
+			} 
+
 			
 			if ($this->id)
 			{
 				$article = Article::findOne(['id' => $this->id]);
+				if (!isset($image))  $image = $article->image;
 				$alias = $article->alias;
 			} else {
 				$article = new Article();
 				$alias = new Alias();
 			}
-		
+
 			$article->attributes = $this->attributes;
 			$article->image = $image;
 			$article->save();
@@ -140,6 +146,7 @@ class ArticleForm extends Model
 			$alias->seourl = $this->seourl;
 			$alias->url = '/news/'. $this->seourl;
 			$alias->safe = 'news/view?id='. $article->id;
+			$alias->save();
 			
 			$transaction->commit();
 			return true;
@@ -156,19 +163,23 @@ class ArticleForm extends Model
 	}
 	
 	/**
+	 * Rename and Save file
 	 * {@inheritdoc}
 	 * @return array
      */ 
 	protected function SaveFile()
 	{		
-		$dir = Yii::getAlias('@app') .'/web/userdata/images/';
+		$dir = Yii::getAlias('@app') .'/web/images/';
+		
 		$file = $this->image[0];
 		$filename = $this->randomFileName($file->extension);
-		$file->saveAs($dir . '/' . $filename);
-		return $filename;
+		if($file->saveAs($dir . '/' . $filename)) return $filename;
+			else return false;
 	}
 	
 	/**
+	 * rename file
+	 * extension : string
 	 * {@inheritdoc}
 	 * @return string
      */ 

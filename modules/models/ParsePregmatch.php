@@ -196,171 +196,101 @@ class ParsePregmatch extends Model
 				else $url = $urlNode->attr("href");
 
 			// we get the content page
-			$content = $this->getContent($url, $this->grabmain);	
-			$transaction = Yii::$app->db->beginTransaction();
-			try {
-				$category = Category::findOne(['name' => $content['category']]);
-				if($category === null)
-				{
-					$category = new Category([
-						'name'   => $content['category'],
-						'seourl' => $this->Translate($content['category']),
-						'status' => 10,
-						'parent_id' => 0
-					]);
-					if(!$category->validate())
-					{
-						foreach ($category->getErrors() as $key => $value) {
-							\Yii::$app->session->setFlash('danger', 'Ошибка категории! '. $value[0]);
-							break;
-						}
-						return false; 
-					}
-					$category->save();
-					$alias = new Alias([
-						'seourl' => $this->Translate($content['title']),
-						'url'    => '/'. $this->Translate($content['title']),
-						'safe'   => 'news/category?id='. $category->id
-					]);
-					$alias->save();
-				}
-				$article = Article::findOne(['ext_id' => $id]);
-				if($article === null)
-				{
-					$article = new Article([
-						'category_id' => $category->id,
-						'title'       => $content['title'],
-						'image'       => $content['image'],
-						'announcement'=> $this->setAnons($content['article']),	
-						'ext_id'      => $id,
-						'content'     => $content['article'],
-						'seourl'      => $this->Translate($content['title']),
-					]);
-					if(!$article->validate())
-					{
-						foreach ($article->getErrors() as $key => $value) {
-							\Yii::$app->session->setFlash('danger', 'Ошибка статьи! '. $value[0]);
-							break;
-						}
-						return false; 
-					}
-					$article->save();
-					$alias = new Alias([
-						'seourl' => $this->Translate($content['title']),
-						'url'    => '/news/'. $this->Translate($content['title']),
-						'safe'   => 'news/view?id='. $article->id
-					]);
-					$alias->save();
-				}
-
-				$transaction->commit();
-				
-			} catch (\Exception $e) {
-				\Yii::$app->session->setFlash('danger','Oшибка записи!');
-				$transaction->rollBack();
-				throw $e;
-			} catch (\Throwable $e) {
-				\Yii::$app->session->setFlash('danger','Oшибка записи!');
-				$transaction->rollBack();
-				throw $e;
-			}		
-			
+			$content = $this->getContent($url, 1);
+			if($content) $this->Save($content, $id);
 		}
 		
-		$crawler->filterXPath("//div[contains(@class, 'js-news-feed-list')]/a[contains(@class, 'news-feed__item')]") 
+		//Graub List News	
+		///$crawler->filterXPath("//div[contains(@class, 'js-news-feed-list')]/a[contains(@class, 'news-feed__item')]") 
+		$crawler->filterXPath("//". $this->parentteg ."[contains(". $this->parenttipe .", '". $this->parent ."')]/". $this->itemteg ."[contains(". $this->itemtipe .", '". $this->parent ."')]") 		
             ->each(function (Crawler $node) {
+				
                 // we get the url
 				$url = $node->attr("href");
-                if (!$url) { 
-                    return;
-                }
-
-                $titleNode = $node->filterXPath("//span[contains(@class, 'news-feed__item__title')]")->first();
-                $title = trim($titleNode->text());
-
-                $id = str_replace("id_newsfeed_", "", $node->attr("id")); 
-                if (!$id) {
-                    return;
-                } 
-				echo $url.'<br/>';
+                if (!$url) return;
 				
+				// we get the id
+                $id = str_replace("id_newsfeed_", "", $node->attr("id")); 
+                if (!$id)  return;
+				
+				// we get the content page
 				$content = $this->getContent($url, 0);
-
-				if($content)
-				{
-					$transaction = Yii::$app->db->beginTransaction();
-					try {
-						$category = Category::findOne(['name' => $content['category']]);
-						if($category === null)
-						{
-							$category = new Category([
-								'name'   => $content['category'],
-								'seourl' => $this->Translate($content['category']),
-								'status' => 10,
-								'parent_id' => 0
-							]);
-							if(!$category->validate())
-							{
-								foreach ($category->getErrors() as $key => $value) {
-									\Yii::$app->session->setFlash('danger', 'Ошибка категории! '. $value[0]);
-									break;
-								}
-								return false; 
-							}
-							$category->save();
-							$alias = new Alias([
-								'seourl' => $this->Translate($content['title']),
-								'url'    => '/'. $this->Translate($content['title']),
-								'safe'   => 'news/category?id='. $category->id
-							]);
-							$alias->save();
-						}
-						$article = Article::findOne(['ext_id' => $id]);
-
-						if($article === null)
-						{
-							$article = new Article([
-								'category_id' => $category->id,
-								'title'       => $content['title'],
-								'image'       => $content['image'],
-								'announcement'=> $this->setAnons($content['article']),	
-								'ext_id'      => $id,
-								'content'     => $content['article'],
-								'seourl'      => $this->Translate($title),
-							]);
-							if(!$article->validate())
-							{
-								foreach ($article->getErrors() as $key => $value) {
-									\Yii::$app->session->setFlash('danger', 'Ошибка статьи! '. $value[0]);
-									break;
-								}
-								return false; 
-							}
-							$article->save();
-							$alias = new Alias([
-								'seourl' => $this->Translate($content['title']),
-								'url'    => '/news/'. $this->Translate($content['title']),
-								'safe'   => 'news/view?id='. $article->id
-							]);
-							$alias->save();
-						}
-
-						$transaction->commit();
-						
-						return true;
-						
-					} catch (\Exception $e) {
-						\Yii::$app->session->setFlash('danger','Oшибка записи!');
-						$transaction->rollBack();
-						throw $e;
-					} catch (\Throwable $e) {
-						\Yii::$app->session->setFlash('danger','Oшибка записи!');
-						$transaction->rollBack();
-						throw $e;
-					}
-				}
-
+				if($content) $this->Save($content, $id);
             });
+	}
+	
+	private function Save($content, $id)
+	{
+		$transaction = Yii::$app->db->beginTransaction();
+		try {
+			$category = Category::findOne(['name' => $content['category']]);
+			if($category === null)
+			{
+				$category = new Category([
+					'name'   => $content['category'],
+					'seourl' => $this->Translate($content['category']),
+					'status' => 10,
+					'parent_id' => 0
+				]);
+				if(!$category->validate())
+				{
+					foreach ($category->getErrors() as $key => $value) {
+						\Yii::$app->session->setFlash('danger', 'Ошибка категории! '. $value[0]);
+						break;
+					}
+					return false; 
+				}
+				$category->save();
+				$alias = new Alias([
+					'seourl' => $this->Translate($content['title']),
+					'url'    => '/'. $this->Translate($content['title']),
+					'safe'   => 'news/category?id='. $category->id
+				]);
+				$alias->save();
+			}
+			$article = Article::findOne(['ext_id' => $id]);
+
+			if($article === null)
+			{
+				$article = new Article([
+					'category_id' => $category->id,
+					'title'       => $content['title'],
+					'image'       => $content['image'],
+					'announcement'=> $this->setAnons($content['article']),	
+					'ext_id'      => $id,
+					'content'     => $content['article'],
+					'seourl'      => $this->Translate($content['title']),
+				]);
+				if(!$article->validate())
+				{
+					foreach ($article->getErrors() as $key => $value) {
+						\Yii::$app->session->setFlash('danger', 'Ошибка статьи! '. $value[0]);
+						break;
+					}
+					return false; 
+				}
+				$article->save();
+				$alias = new Alias([
+					'seourl' => $this->Translate($content['title']),
+					'url'    => '/news/'. $this->Translate($content['title']),
+					'safe'   => 'news/view?id='. $article->id
+				]);
+				$alias->save();
+			}
+
+			$transaction->commit();
+			
+			return true;
+			
+		} catch (\Exception $e) {
+			\Yii::$app->session->setFlash('danger','Oшибка записи!');
+			$transaction->rollBack();
+			throw $e;
+		} catch (\Throwable $e) {
+			\Yii::$app->session->setFlash('danger','Oшибка записи!');
+			$transaction->rollBack();
+			throw $e;
+		}
 	}
 	
 	private function getSringHtml($url)
@@ -397,7 +327,6 @@ class ParsePregmatch extends Model
 		// we get the title
 		$prop = ($this->titletipe == 'other') ? "@". trim($this->title) : "contains(". $this->titletipe .", '". trim($this->title) ."')";
 		$title = $crawler->filterXPath("//". $this->titleteg ."[". $prop ."]")->first(); 
-		echo $prop ;
 		if (!empty($title))
 		{
 			$conten['title'] = trim($title->html());

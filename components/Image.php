@@ -3,7 +3,7 @@ namespace app\components;
 
 use Yii;
 //use common\models\Resize;
-define('DIR_IMAGE', $_SERVER['DOCUMENT_ROOT'].'/web/userdata/images/');
+define('DIR_IMAGE', Yii::getAlias('@app') .'/web/images/');
 /**
 *	
 *	@param filename string
@@ -56,7 +56,7 @@ class Image extends \yii\base\Model
 				copy(DIR_IMAGE . $old_image, DIR_IMAGE . $new_image);
 			}
 		}
-		return '/userdata/images/'.$new_image;		
+		return '/images/'.$new_image;		
 	}
 }
 ?>
