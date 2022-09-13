@@ -52,6 +52,9 @@ $config = [
             'rules' => [
 				'' => 'site/index',
 				'login' => '/user/login',
+				['class' => 'app\components\SefRule', 
+					'connectionID' => 'db',
+				],
             ],
         ],
     ],

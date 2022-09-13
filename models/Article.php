@@ -19,10 +19,14 @@ use yii\helpers\ArrayHelper;
  * @property string|null $image
  * @property string|null $ext_id
  * @property string $seourl
+ * @property int status
  */
 class Article extends \yii\db\ActiveRecord
 {
-    /**
+    const STATUS_DELETED = 0;
+    const STATUS_ACTIVE = 10;
+	
+	/**
      * {@inheritdoc}
      */
     public static function tableName()
@@ -48,7 +52,8 @@ class Article extends \yii\db\ActiveRecord
         return [
             [['category_id', 'title', 'announcement', 'content', 'seourl'], 'required'],
             [['created_at', 'updated_at'], 'default', 'value' => null],
-            [['created_at', 'updated_at', 'category_id'], 'integer'],
+            [['created_at', 'updated_at', 'category_id', 'status'], 'integer'],
+			['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
             [['content'], 'string'],
             [['title'], 'string', 'max' => 500],
             [['announcement'], 'string', 'max' => 205],
@@ -76,6 +81,17 @@ class Article extends \yii\db\ActiveRecord
 			 }
 		}
 	}
+	
+	/**
+     * @inheritdoc
+     */
+    public static function getStatusName()
+    {
+        return [
+			self::STATUS_ACTIVE  => 'Включен',
+			self::STATUS_DELETED => 'Отключен'
+		];
+    }
 
     /**
      * {@inheritdoc}
@@ -123,5 +139,14 @@ class Article extends \yii\db\ActiveRecord
 	public function getAlias()
 	{
 		return $this->hasOne(Alias::className(), ['seourl' => 'seourl']);
+	}
+	
+	/**
+     * Gets query for [[Coment]].
+     * @return \yii\db\ActiveQuery
+     */ 
+	public function getComents()
+	{
+		return $this->hasMany(Coment::className(), ['id_article' => 'id']);
 	}
 }

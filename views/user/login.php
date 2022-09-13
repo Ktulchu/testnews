@@ -40,6 +40,6 @@ $this->params['breadcrumbs'][] = $this->title;
     <?php ActiveForm::end(); ?>
 
     <div class="offset-lg-1" style="color:#999;">
-        Для авторизации администратором используйте <strong>admin/123456</strong><br> или <strong>demo/demo</strong> что бы остовлять отзывы.<br>
+        Для авторизации администратором используйте <strong>admin/12345678</strong><br>
     </div>
 </div>

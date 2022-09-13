@@ -9,6 +9,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\SearchArticle;
 
 class SiteController extends Controller
 {
@@ -61,7 +62,14 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $searchModel = new SearchArticle(['status' => 10]);
+        $dataProvider = $searchModel->search($this->request->queryParams);
+		$dataProvider->setSort(['defaultOrder' => ['updated_at' => SORT_DESC]]);
+		$dataProvider->pagination->pageSize = 3;
+        return $this->render('index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
     /**

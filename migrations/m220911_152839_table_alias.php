@@ -26,8 +26,6 @@ class m220911_152839_table_alias extends Migration
     public function safeDown()
     {
         $this->dropTable('{{%alias}}');
-
-        return false;
     }
 
     /*

@@ -21,6 +21,7 @@ class ArticleForm extends Model
 	public $image;
 	public $seourl;
 	public $delimg;
+	public $status;
    
 	/**
      * {@inheritdoc}
@@ -45,6 +46,7 @@ class ArticleForm extends Model
             [['announcement'], 'string', 'max' => 205],
             [['seourl'], 'string', 'max' => 500],
 			[['seourl'], 'ValidUnique'],
+			['status', 'in', 'range' => [Article::STATUS_ACTIVE, Article::STATUS_DELETED]],
 			[['image'], 'image',
 				'extensions' => ['jpg', 'jpeg', 'png', 'gif'],
 				'checkExtensionByMimeType' => true,
@@ -74,6 +76,14 @@ class ArticleForm extends Model
 			 }
 		}
 	}
+	
+	/**
+     * @inheritdoc
+     */
+    public static function getStatusName()
+    {
+        return Article::getStatusName();
+    }
 	
 	/**
      * Gets query for [[Article]].

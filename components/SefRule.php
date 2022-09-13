@@ -1,7 +1,7 @@
 <?php
 namespace app\components;
  
-use common\models\Alias;
+use app\models\Alias;
 use yii\web\UrlRuleInterface;
  
 class SefRule extends \yii\base\BaseObject implements UrlRuleInterface{

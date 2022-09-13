@@ -202,7 +202,9 @@ class ParsePregmatch extends Model
 		
 		//Graub List News	
 		///$crawler->filterXPath("//div[contains(@class, 'js-news-feed-list')]/a[contains(@class, 'news-feed__item')]") 
-		$crawler->filterXPath("//". $this->parentteg ."[contains(". $this->parenttipe .", '". $this->parent ."')]/". $this->itemteg ."[contains(". $this->itemtipe .", '". $this->parent ."')]") 		
+		//                        //div[contains(@class, 'js-news-feed-list')]/a[contains(@class, 'news-feed__item')]
+		$path = "//". $this->parentteg ."[contains(". $this->parenttipe .", '". $this->parent ."')]/". $this->itemteg ."[contains(". $this->itemtipe .", '". $this->item ."')]";
+		$crawler->filterXPath($path) 		
             ->each(function (Crawler $node) {
 				
                 // we get the url
@@ -232,6 +234,7 @@ class ParsePregmatch extends Model
 					'status' => 10,
 					'parent_id' => 0
 				]);
+				
 				if(!$category->validate())
 				{
 					foreach ($category->getErrors() as $key => $value) {
@@ -241,12 +244,21 @@ class ParsePregmatch extends Model
 					return false; 
 				}
 				$category->save();
-				$alias = new Alias([
-					'seourl' => $this->Translate($content['title']),
-					'url'    => '/'. $this->Translate($content['title']),
+				$aliasc = new Alias([
+					'seourl' => $this->Translate($content['category']),
+					'url'    => '/'. $this->Translate($content['category']),
 					'safe'   => 'news/category?id='. $category->id
 				]);
-				$alias->save();
+				if(!$aliasc->validate())
+				{
+					foreach ($aliasc->getErrors() as $key => $value) {
+						\Yii::$app->session->setFlash('danger', 'Ошибка категории! '. $value[0]);
+						break;
+					}
+					return false; 
+				}
+				$aliasc->save();
+				
 			}
 			$article = Article::findOne(['ext_id' => $id]);
 
@@ -260,6 +272,7 @@ class ParsePregmatch extends Model
 					'ext_id'      => $id,
 					'content'     => $content['article'],
 					'seourl'      => $this->Translate($content['title']),
+					'status'      => 10,
 				]);
 				if(!$article->validate())
 				{

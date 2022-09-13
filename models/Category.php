@@ -128,6 +128,8 @@ class Category extends \yii\db\ActiveRecord
 		return $result;
 	}
 	
+	
+	
 	/**
      * {@inheritdoc}
      */
@@ -141,5 +143,14 @@ class Category extends \yii\db\ActiveRecord
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+     * Gets query for [[Category]].
+     * @return \yii\db\ActiveQuery
+     */ 
+	public function getAlias()
+	{
+		return $this->hasOne(Alias::className(), ['seourl' => 'seourl']);
 	}
 }

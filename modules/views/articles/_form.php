@@ -23,6 +23,7 @@ use app\components\Image;
 		]); ?>
 	  </div>
 	  <div class="col-md-4">
+	    <?= $form->field($model, 'status')->dropDownList($model->statusName) ?>
 		<?= $form->field($model, 'category_id')->widget(Select2::classname(), [
 			'data' => $model->categoryList,
 			'options' => ['placeholder' => 'Родительская категория'],
